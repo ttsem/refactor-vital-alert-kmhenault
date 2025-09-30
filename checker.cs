@@ -7,22 +7,20 @@ class Checker
 {
     public static bool VitalsOk(float temperature, int pulseRate, int oxygenSaturation)
     {
-        if (!IsTemperatureOk(temperature))
+        var checks = new List<(Func<bool> condition, string message)>
         {
-            Alert("Temperature critical!");
-            return false;
-        }
+            (() => !IsTemperatureOk(temperature), "Temperature critical!"),
+            (() => !IsPulseRateOk(pulseRate), "Pulse Rate is out of range!"),
+            (() => !IsOxygenSaturationOk(oxygenSaturation), "Oxygen Saturation out of range!")
+        };
 
-        if (!IsPulseRateOk(pulseRate))
+        foreach (var (condition, message) in checks)
         {
-            Alert("Pulse Rate is out of range!");
-            return false;
-        }
-
-        if (!IsOxygenSaturationOk(oxygenSaturation))
-        {
-            Alert("Oxygen Saturation out of range!");
-            return false;
+            if (condition())
+            {
+                Alert(message);
+                return false;
+            }
         }
 
         Console.WriteLine("Vitals received within normal range");
